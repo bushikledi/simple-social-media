@@ -1,15 +1,18 @@
 package com.media.social.service;
 
+import com.media.social.dto.PostDTO;
 import com.media.social.model.Friend;
 import com.media.social.model.FriendStatus;
 import com.media.social.model.Post;
 import com.media.social.model.User;
 import com.media.social.repository.FriendRepository;
 import com.media.social.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -18,15 +21,15 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class PostServiceImplementation implements PostService {
-
     private final PostRepository postRepository;
     private final FriendRepository friendRepository;
     private final AuthenticationService authenticationService;
 
     @Override
     public void updatePost(Post post, Long postId) {
+        User user = authenticationService.getAuthenticatedUser();
         try {
-            Post post1 = getPost(postId);
+            Post post1 = postRepository.findByPostIdAndUser(postId, user).orElse(null);
             if (post1 == null)
                 throw new NullPointerException();
             if (!post.getContent().isEmpty())
@@ -41,36 +44,45 @@ public class PostServiceImplementation implements PostService {
     }
 
     @Override
-    public Post getPost(Long postId) {
+    public PostDTO getPost(Long postId) {
         User user = authenticationService.getAuthenticatedUser();
         return postRepository.findByPostIdAndUser(postId, user)
+                .map(p -> new PostDTO().postToPostDTO(p))
                 .orElseThrow(() -> new RuntimeException("Post not found"));
     }
 
     @Override
-    public List<Post> getUserPosts() {
-        User user = authenticationService.getAuthenticatedUser();
-        return postRepository.findByUserOrderByPostCreated(user)
+    public List<PostDTO> getUserPosts(User user) {
+        List<Post> posts = postRepository.findByUserOrderByPostCreated(user)
                 .orElseThrow(() -> new RuntimeException("Posts not found"));
+        return posts.stream()
+                .map(p -> new PostDTO().postToPostDTO(p))
+                .toList();
     }
 
     @Override
-    public List<Post> getFeedPosts() {
+    public List<PostDTO> getUserPosts() {
         User user = authenticationService.getAuthenticatedUser();
-        List<Post> posts = getUserPosts();
-        log.info(posts.toString());
+        return getUserPosts(user);
+    }
+
+    @Override
+    public List<PostDTO> getFeedPosts() {
+        User user = authenticationService.getAuthenticatedUser();
+        List<PostDTO> posts = new ArrayList<>(getUserPosts());
         List<User> feedUsers = friendRepository.findByFriendAndFriendStatus(user, FriendStatus.ACCEPTED)
                 .stream()
-                .map(Friend::getFriend)
+                .map(Friend::getUser)
                 .toList();
-        for (User friend : feedUsers) {
-            postRepository.findByUserOrderByPostCreated(friend).ifPresent(posts::addAll);
-        }
-        posts.sort(Comparator.comparing(Post::getPostCreated).reversed());
+        posts.addAll(feedUsers.stream()
+                .flatMap(u -> getUserPosts(u).stream())
+                .toList());
+        posts.sort(Comparator.comparing(PostDTO::getPostCreated).reversed());
         return posts;
     }
 
     @Override
+    @Transactional
     public void deletePost(Long postId) {
         User user = authenticationService.getAuthenticatedUser();
         try {

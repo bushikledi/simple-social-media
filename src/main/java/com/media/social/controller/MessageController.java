@@ -1,6 +1,6 @@
 package com.media.social.controller;
 
-import com.media.social.model.Message;
+import com.media.social.dto.MessageDTO;
 import com.media.social.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,11 +14,9 @@ import java.util.List;
 @RequestMapping("api/user/message")
 @RequiredArgsConstructor
 public class MessageController {
-
     private final MessageService messageService;
 
-    @GetMapping(params = "content")
-    @PostMapping("/{friend_id}")
+    @PostMapping(value = "/{friend_id}", params = "content")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> sendMessage(@RequestParam(name = "content") String content,
                                             @PathVariable(name = "friend_id") Long friendId) {
@@ -26,9 +24,9 @@ public class MessageController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/{friend_id}")
+    @GetMapping("/chat/{friend_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Message>> getFriendMessages(@PathVariable(name = "friend_id") Long friendId) {
+    public ResponseEntity<List<MessageDTO>> getFriendMessages(@PathVariable(name = "friend_id") Long friendId) {
         return ResponseEntity.ok(messageService.getFriendMessages(friendId));
     }
 }

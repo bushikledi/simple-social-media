@@ -5,6 +5,7 @@ import com.media.social.dto.UserDTO;
 import com.media.social.model.Role;
 import com.media.social.model.User;
 import com.media.social.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser() {
         User user = authenticationService.getAuthenticatedUser();
         try {

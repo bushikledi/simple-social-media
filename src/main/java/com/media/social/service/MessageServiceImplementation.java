@@ -1,5 +1,6 @@
 package com.media.social.service;
 
+import com.media.social.dto.MessageDTO;
 import com.media.social.model.Message;
 import com.media.social.model.User;
 import com.media.social.repository.MessageRepository;
@@ -35,18 +36,21 @@ public class MessageServiceImplementation implements MessageService {
     }
 
     @Override
-    public List<Message> getFriendMessages(Long friendId) {
+    public List<MessageDTO> getFriendMessages(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
         List<Message> readEqualsFalse = messageRepository
-                .findBySenderAndReceiverAndMessageReadEquals(user,
-                        userRepository.findById(friendId).orElse(null), false);
+                .findBySenderAndReceiverAndMessageReadEquals(
+                        userRepository.findById(friendId).orElse(null),
+                        user, false);
         if (readEqualsFalse != null) {
             for (Message message : readEqualsFalse) {
                 message.setMessageRead(true);
             }
             messageRepository.saveAll(readEqualsFalse);
         }
-        return messageRepository.findBySenderAndReceiver(user, userRepository.findById(friendId)
-                .orElseThrow(() -> new RuntimeException("Cannot get messages")));
+        return messageRepository.findBySenderAndReceiver(
+                        userRepository.findById(friendId).orElseThrow(() -> new RuntimeException("Cannot get messages")),
+                        user)
+                .stream().map(m -> new MessageDTO().messageToMessageDTO(m)).toList();
     }
 }

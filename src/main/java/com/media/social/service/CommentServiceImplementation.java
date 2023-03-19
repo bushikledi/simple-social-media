@@ -27,7 +27,7 @@ public class CommentServiceImplementation implements CommentService {
                     .comment(comment)
                     .commentDate(new Date().toInstant())
                     .post(postRepository.findById(postId)
-                            .orElseThrow(()->new RuntimeException("Post not found!")))
+                            .orElseThrow(() -> new RuntimeException("Post not found!")))
                     .user(user)
                     .build());
         } catch (Exception e) {
@@ -45,9 +45,8 @@ public class CommentServiceImplementation implements CommentService {
 
     @Override
     public List<CommentDTO> getAllCommentsForUser(Long userId) {
-        CommentDTO commentDTO = new CommentDTO();
         return commentRepository.findAllByUserUserId(userId).stream()
-                .map(commentDTO::commentToDTO)
+                .map(c -> new CommentDTO().commentToDTO(c))
                 .toList();
     }
 }

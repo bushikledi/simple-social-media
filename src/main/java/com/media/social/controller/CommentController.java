@@ -38,5 +38,4 @@ public class CommentController {
         return ResponseEntity.status(OK)
                 .body(commentService.getAllCommentsForUser(userId));
     }
-
 }

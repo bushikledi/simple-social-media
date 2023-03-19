@@ -1,6 +1,7 @@
 package com.media.social.controller;
 
 
+import com.media.social.dto.PostDTO;
 import com.media.social.model.Post;
 import com.media.social.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -34,19 +35,19 @@ public class PostController {
 
     @GetMapping("{post_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Post> getPost(@PathVariable(name = "post_id") Long postId) {
+    public ResponseEntity<PostDTO> getPost(@PathVariable(name = "post_id") Long postId) {
         return ResponseEntity.ok(postService.getPost(postId));
     }
 
     @GetMapping("all")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Post>> getAllPosts() {
+    public ResponseEntity<List<PostDTO>> getAllPosts() {
         return ResponseEntity.ok(postService.getUserPosts());
     }
 
     @GetMapping("feed")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Post>> getFeedPosts() {
+    public ResponseEntity<List<PostDTO>> getFeedPosts() {
         return ResponseEntity.ok(postService.getFeedPosts());
     }
 
