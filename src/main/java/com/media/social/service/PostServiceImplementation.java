@@ -5,11 +5,11 @@ import com.media.social.model.Friend;
 import com.media.social.model.FriendStatus;
 import com.media.social.model.Post;
 import com.media.social.model.User;
+import com.media.social.repository.CommentRepository;
 import com.media.social.repository.FriendRepository;
 import com.media.social.repository.PostRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,12 +18,12 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class PostServiceImplementation implements PostService {
     private final PostRepository postRepository;
     private final FriendRepository friendRepository;
     private final AuthenticationService authenticationService;
+    private final CommentRepository commentRepository;
 
     @Override
     public void updatePost(Post post, Long postId) {
@@ -70,10 +70,14 @@ public class PostServiceImplementation implements PostService {
     public List<PostDTO> getFeedPosts() {
         User user = authenticationService.getAuthenticatedUser();
         List<PostDTO> posts = new ArrayList<>(getUserPosts());
-        List<User> feedUsers = friendRepository.findByFriendAndFriendStatus(user, FriendStatus.ACCEPTED)
+        List<User> feedUsers = new ArrayList<>(friendRepository.findByFriendAndFriendStatus(user, FriendStatus.ACCEPTED)
                 .stream()
                 .map(Friend::getUser)
-                .toList();
+                .toList());
+        feedUsers.addAll(friendRepository.findByUserAndFriendStatus(user, FriendStatus.ACCEPTED)
+                .stream()
+                .map(Friend::getFriend)
+                .toList());
         posts.addAll(feedUsers.stream()
                 .flatMap(u -> getUserPosts(u).stream())
                 .toList());
@@ -86,7 +90,9 @@ public class PostServiceImplementation implements PostService {
     public void deletePost(Long postId) {
         User user = authenticationService.getAuthenticatedUser();
         try {
+            postRepository.findByPostIdAndUser(postId, user).orElseThrow();
             postRepository.deleteByPostIdAndUser(postId, user);
+            commentRepository.deleteAllByPostPostId(postId);
         } catch (Exception e) {
             throw new RuntimeException("Unable to delete the post", e);
         }

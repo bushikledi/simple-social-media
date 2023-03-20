@@ -1,7 +1,6 @@
 package com.media.social.service;
 
 import com.media.social.dto.UserDTO;
-import com.media.social.model.Friend;
 
 import java.util.List;
 

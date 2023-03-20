@@ -38,6 +38,7 @@ public class MessageServiceImplementation implements MessageService {
     @Override
     public List<MessageDTO> getFriendMessages(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new RuntimeException("Cannot get messages"));
         List<Message> readEqualsFalse = messageRepository
                 .findBySenderAndReceiverAndMessageReadEquals(
                         userRepository.findById(friendId).orElse(null),
@@ -48,9 +49,8 @@ public class MessageServiceImplementation implements MessageService {
             }
             messageRepository.saveAll(readEqualsFalse);
         }
-        return messageRepository.findBySenderAndReceiver(
-                        userRepository.findById(friendId).orElseThrow(() -> new RuntimeException("Cannot get messages")),
-                        user)
+        return messageRepository.findBySenderAndReceiverOrSenderAndReceiverOrderBySentDesc(
+                        friend, user, user, friend)
                 .stream().map(m -> new MessageDTO().messageToMessageDTO(m)).toList();
     }
 }

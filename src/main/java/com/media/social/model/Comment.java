@@ -1,18 +1,18 @@
 package com.media.social.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-@Data
-@Entity
+@Getter
+@Setter
 @Builder
+@Entity
 @Table(name = "comments")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,13 +22,38 @@ public class Comment {
     private Long commentId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
+    @ToString.Exclude
     private Post post;
     @Column(name = "comment", nullable = false)
     private String comment;
     @Column(name = "comment_date", nullable = false)
     private Instant commentDate;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Comment comment = (Comment) o;
+        return commentId != null && Objects.equals(commentId, comment.commentId);
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "commentId=" + commentId +
+                ", user=" + user +
+                ", post=" + post +
+                ", comment='" + comment + '\'' +
+                ", commentDate=" + commentDate +
+                '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

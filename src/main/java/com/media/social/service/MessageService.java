@@ -1,8 +1,6 @@
 package com.media.social.service;
 
 import com.media.social.dto.MessageDTO;
-import com.media.social.model.Message;
-import com.media.social.model.User;
 
 import java.util.List;
 

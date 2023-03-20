@@ -11,11 +11,21 @@ import java.util.Optional;
 
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
-    List<Friend> findByFriendAndFriendStatus(User user, FriendStatus friendStatus);
+    List<Friend> findByFriendOrUserAndFriendStatus(User friend, User user, FriendStatus friendStatus);
+
+    List<Friend> findByUserAndFriendStatus(User user, FriendStatus friendStatus);
 
     List<Friend> findFriendsByUserAndFriend(User user, User friend);
 
+    List<Friend> findByFriendAndFriendStatus(User friend, FriendStatus friendStatus);
+
     Optional<Friend> findByUserAndFriendAndFriendStatus(User user, User friend, FriendStatus friendStatus);
 
-    void deleteByUserAndFriend(User user, User friend);
+    Optional<Friend> findByUserAndFriendOrUserAndFriendAndFriendStatus(User user, User friend,
+                                                                       User user2, User friend2,
+                                                                       FriendStatus friendStatus);
+
+    void deleteAllByUserOrFriend(User user, User friend);
+
+    void deleteByUserAndFriendOrUserAndFriend(User user, User friend, User user2, User friend2);
 }

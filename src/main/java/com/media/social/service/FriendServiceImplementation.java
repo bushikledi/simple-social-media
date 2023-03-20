@@ -9,6 +9,7 @@ import com.media.social.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -18,18 +19,18 @@ public class FriendServiceImplementation implements FriendService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
 
-
     @Override
     public void requestFriend(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Cannot find friend"));
         try {
-            if (friendRepository.findFriendsByUserAndFriend(user, userRepository.findById(friendId)
-                    .orElse(null)) == null)
+            if (friendRepository.findFriendsByUserAndFriend(user, friend) == null)
                 friendRepository.save(Friend.builder()
-                        .friend(userRepository.findById(friendId)
-                                .orElseThrow(() -> new RuntimeException("Cannot find friend")))
+                        .friend(friend)
                         .friendStatus(FriendStatus.PENDING)
                         .user(user)
+                        .friendDate(new Date().toInstant())
                         .build());
         } catch (Exception e) {
             throw new RuntimeException("Couldn't request friend!", e);
@@ -41,14 +42,11 @@ public class FriendServiceImplementation implements FriendService {
         User user = authenticationService.getAuthenticatedUser();
         try {
             Friend friend = friendRepository.findByUserAndFriendAndFriendStatus(userRepository.findById(friendId)
-                    .orElseThrow(() -> new RuntimeException("Couldn't get friend")), user, FriendStatus.PENDING).orElseThrow();
+                            .orElseThrow(() -> new RuntimeException("Couldn't get friend")),
+                    user, FriendStatus.PENDING).orElseThrow();
             friend.setFriendStatus(FriendStatus.ACCEPTED);
+            friend.setFriendDate(new Date().toInstant());
             friendRepository.save(friend);
-            friendRepository.save(Friend.builder()
-                    .user(user)
-                    .friendStatus(FriendStatus.ACCEPTED)
-                    .friend(friendRepository.findById(friendId).orElseThrow().getUser())
-                    .build());
         } catch (Exception e) {
             throw new RuntimeException("Couldn't accept friend!", e);
         }
@@ -57,11 +55,10 @@ public class FriendServiceImplementation implements FriendService {
     @Override
     public void deleteFriend(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Couldn't get friend"));
         try {
-            friendRepository.deleteByUserAndFriend(user, userRepository.findById(friendId)
-                    .orElseThrow(() -> new RuntimeException("Couldn't get friend")));
-            friendRepository.deleteByUserAndFriend(userRepository.findById(friendId)
-                    .orElseThrow(() -> new RuntimeException("Couldn't get friend")), user);
+            friendRepository.deleteByUserAndFriendOrUserAndFriend(user, friend, friend, user);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't delete friend!", e);
         }
@@ -71,7 +68,7 @@ public class FriendServiceImplementation implements FriendService {
     @Override
     public List<UserDTO> getFriends() {
         User user = authenticationService.getAuthenticatedUser();
-        List<User> friends = friendRepository.findByFriendAndFriendStatus(user, FriendStatus.ACCEPTED)
+        List<User> friends = friendRepository.findByFriendOrUserAndFriendStatus(user, user, FriendStatus.ACCEPTED)
                 .stream()
                 .map(Friend::getUser).toList();
         if (friends.isEmpty()) {
@@ -86,18 +83,16 @@ public class FriendServiceImplementation implements FriendService {
         List<User> friends = friendRepository.findByFriendAndFriendStatus(user, FriendStatus.PENDING)
                 .stream()
                 .map(Friend::getUser).toList();
-        if (friends.isEmpty()) {
-            return null;
-        }
         return friends.stream().map(f -> new UserDTO().userToDTO(f)).toList();
     }
 
     @Override
     public UserDTO getFriend(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
-        User friend = friendRepository.findByUserAndFriendAndFriendStatus(user, userRepository.findById(friendId)
-                        .orElse(null), FriendStatus.ACCEPTED)
-                .orElseThrow().getFriend();
-        return new UserDTO().userToDTO(friend);
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Couldn't get friend"));
+        return new UserDTO().userToDTO(friendRepository.
+                findByUserAndFriendOrUserAndFriendAndFriendStatus(user, friend, user, friend, FriendStatus.ACCEPTED)
+                .orElseThrow().getFriend());
     }
 }

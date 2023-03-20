@@ -4,13 +4,11 @@ import com.media.social.dto.UserDTO;
 import com.media.social.model.User;
 import com.media.social.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
 @RequestMapping("api/user")
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("info")
+    @GetMapping("")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDTO> getUser() {
         return ResponseEntity.ok(userService.getUser());
@@ -37,7 +35,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("save")
+    @PostMapping("signup")
     public ResponseEntity<Void> saveUser(@RequestBody User user) {
         userService.saveUser(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
