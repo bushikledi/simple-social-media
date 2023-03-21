@@ -2,6 +2,7 @@ package com.media.social.configuration;
 
 import com.media.social.filter.CustomAuthenticationFilter;
 import com.media.social.filter.CustomAuthorisationFilter;
+import com.media.social.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,17 +18,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
+    private final TokenService tokenService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         CustomAuthenticationFilter customAuthenticationFilter =
-                new CustomAuthenticationFilter(authenticationProvider);
+                new CustomAuthenticationFilter(authenticationProvider, tokenService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/login", "/api/user/save").permitAll()
-                .requestMatchers("/api/user/**").authenticated()
+                .requestMatchers("/api/login", "/api/user/signup", "/api/user/refresh/token").permitAll()
+                .requestMatchers("/api/**").authenticated()
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -35,7 +37,8 @@ public class SecurityConfiguration {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(customAuthenticationFilter)
-                .addFilterBefore(new CustomAuthorisationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new CustomAuthorisationFilter(tokenService),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

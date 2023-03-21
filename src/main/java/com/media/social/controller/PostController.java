@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/user/post")
+@RequestMapping("api/post")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
@@ -34,25 +34,21 @@ public class PostController {
     }
 
     @GetMapping("{post_id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PostDTO> getPost(@PathVariable(name = "post_id") Long postId) {
         return ResponseEntity.ok(postService.getPost(postId));
     }
 
     @GetMapping("all")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PostDTO>> getAllPosts() {
         return ResponseEntity.ok(postService.getUserPosts());
     }
 
     @GetMapping("feed")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PostDTO>> getFeedPosts() {
         return ResponseEntity.ok(postService.getFeedPosts());
     }
 
     @DeleteMapping("delete/{post_id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deletePost(@PathVariable(name = "post_id") Long postId) {
         postService.deletePost(postId);
         return new ResponseEntity<>(HttpStatus.OK);
