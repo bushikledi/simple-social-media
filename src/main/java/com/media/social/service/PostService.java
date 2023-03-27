@@ -2,7 +2,6 @@ package com.media.social.service;
 
 import com.media.social.dto.PostDTO;
 import com.media.social.model.Post;
-import com.media.social.model.User;
 
 import java.util.List;
 
@@ -11,8 +10,6 @@ public interface PostService {
 
     PostDTO getPost(Long postId);
 
-    List<PostDTO> getUserPosts(User user);
-
     List<PostDTO> getUserPosts();
 
     List<PostDTO> getFeedPosts();
@@ -20,4 +17,6 @@ public interface PostService {
     void deletePost(Long postId);
 
     void createPost(Post post);
+
+    void setLike(Long postId);
 }

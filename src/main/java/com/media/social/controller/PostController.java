@@ -7,7 +7,6 @@ import com.media.social.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +18,18 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("create")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createPost(@RequestBody Post post) {
         postService.createPost(post);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PostMapping("/like/{post_id}")
+    public ResponseEntity<Void> setLike(@PathVariable("post_id") Long postId) {
+        postService.setLike(postId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PutMapping("update/{post_id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updatePost(@RequestBody Post post,
                                            @PathVariable(name = "post_id") Long postId) {
         postService.updatePost(post, postId);
@@ -37,6 +40,7 @@ public class PostController {
     public ResponseEntity<PostDTO> getPost(@PathVariable(name = "post_id") Long postId) {
         return ResponseEntity.ok(postService.getPost(postId));
     }
+
 
     @GetMapping("all")
     public ResponseEntity<List<PostDTO>> getAllPosts() {

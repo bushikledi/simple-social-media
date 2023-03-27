@@ -22,6 +22,8 @@ public class PostDTO {
     private String imageUrl;
     @Column(name = "like_count")
     private Integer likeCount;
+    @Column(name = "liked")
+    private boolean liked;
     @Column(name = "post_created", nullable = false)
     private Instant postCreated;
 
@@ -29,7 +31,6 @@ public class PostDTO {
         this.userId = post.getUser().getUserId();
         this.content = post.getContent();
         this.imageUrl = post.getImageUrl();
-        this.likeCount = post.getLikeCount();
         this.postCreated = post.getPostCreated();
         return this;
     }

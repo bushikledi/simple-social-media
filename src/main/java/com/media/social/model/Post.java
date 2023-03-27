@@ -27,8 +27,6 @@ public class Post {
     private String content;
     @Column(name = "image_url")
     private String imageUrl;
-    @Column(name = "like_count")
-    private Integer likeCount;
     @Column(name = "post_created", nullable = false)
     private Instant postCreated;
 
@@ -39,7 +37,6 @@ public class Post {
                 ", user=" + user +
                 ", content='" + content + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
-                ", likeCount=" + likeCount +
                 ", postCreated=" + postCreated +
                 '}';
     }
