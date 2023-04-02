@@ -6,6 +6,7 @@ import com.media.social.model.FriendStatus;
 import com.media.social.model.User;
 import com.media.social.repository.FriendRepository;
 import com.media.social.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,18 +21,20 @@ public class FriendServiceImplementation implements FriendService {
     private final AuthenticationService authenticationService;
 
     @Override
+    @Transactional
     public void requestFriend(Long friendId) {
         User user = authenticationService.getAuthenticatedUser();
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new RuntimeException("Cannot find friend"));
         try {
-            if (friendRepository.findFriendsByUserAndFriend(user, friend) == null)
+            if (friendRepository.findFriendsByUserAndFriendOrUserAndFriend(user, friend, friend, user) == null) {
                 friendRepository.save(Friend.builder()
                         .friend(friend)
                         .friendStatus(FriendStatus.PENDING)
                         .user(user)
                         .friendDate(new Date().toInstant())
                         .build());
+            } else throw new RuntimeException();
         } catch (Exception e) {
             throw new RuntimeException("Couldn't request friend!", e);
         }

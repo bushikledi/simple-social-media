@@ -51,7 +51,9 @@ public class User implements UserDetails {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$",
+            message = "Password must be at least 8 characters long and contain one digit," +
+                    " one lowercase letter, one uppercase letter, and one special character")
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -89,22 +91,6 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", location='" + location + '\'' +
-                ", about='" + about + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", userCreated=" + userCreated +
-                ", role=" + role +
-                '}';
     }
 
     @Override

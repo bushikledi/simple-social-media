@@ -50,7 +50,7 @@ public class PostServiceImplementation implements PostService {
                 .orElseThrow(() -> new RuntimeException("Post not found"));
     }
 
-    private List<PostDTO> getUserPosts(User user) {
+    private List<PostDTO> getUserPosts(User user, Long id) {
         List<Post> posts = postRepository.findByUserOrderByPostCreated(user)
                 .orElseThrow(() -> new RuntimeException("Posts not found"));
         return posts.stream()
@@ -58,7 +58,7 @@ public class PostServiceImplementation implements PostService {
                     PostDTO postDTO = new PostDTO().postToPostDTO(p);
                     Like like = likeRepository.findByPostPostId(p.getPostId())
                             .orElseThrow(() -> new RuntimeException("Likes not found"));
-                    postDTO.setLiked(like.getUsers().contains(user));
+                    postDTO.setLiked(like.getUsers().contains(id));
                     postDTO.setLikeCount(like.getUsers().size());
                     return postDTO;
                 })
@@ -68,7 +68,7 @@ public class PostServiceImplementation implements PostService {
     @Override
     public List<PostDTO> getUserPosts() {
         User user = authenticationService.getAuthenticatedUser();
-        return getUserPosts(user);
+        return getUserPosts(user, user.getUserId());
     }
 
     @Override
@@ -84,7 +84,7 @@ public class PostServiceImplementation implements PostService {
                 .map(Friend::getFriend)
                 .toList());
         posts.addAll(feedUsers.stream()
-                .flatMap(u -> getUserPosts(u).stream())
+                .flatMap(u -> getUserPosts(u, user.getUserId()).stream())
                 .toList());
         posts.sort(Comparator.comparing(PostDTO::getPostCreated).reversed());
         return posts;
@@ -96,9 +96,11 @@ public class PostServiceImplementation implements PostService {
         User user = authenticationService.getAuthenticatedUser();
         try {
             postRepository.findByPostIdAndUser(postId, user).orElseThrow();
-            postRepository.deleteByPostIdAndUser(postId, user);
             commentRepository.deleteAllByPostPostId(postId);
-            likeRepository.deleteAllByPostPostId(postId);
+            likeRepository.delete(
+                    likeRepository.findByPostPostId(postId).orElseThrow()
+            );
+            postRepository.deleteByPostIdAndUser(postId, user);
         } catch (Exception e) {
             throw new RuntimeException("Unable to delete the post", e);
         }
@@ -110,11 +112,11 @@ public class PostServiceImplementation implements PostService {
         try {
             post.setUser(user);
             post.setPostCreated(new Date().toInstant());
+            postRepository.save(post);
             likeRepository.save(Like.builder()
                     .users(null)
                     .post(post)
                     .build());
-            postRepository.save(post);
         } catch (Exception e) {
             throw new RuntimeException("Unable to create the post", e);
         }
@@ -123,11 +125,11 @@ public class PostServiceImplementation implements PostService {
     @Override
     public void setLike(Long postId) {
         User user = authenticationService.getAuthenticatedUser();
-        Like like = likeRepository.findById(postId).orElseThrow(() -> new RuntimeException("Likes not found!"));
-        if (like.getUsers().contains(user)) {
-            like.getUsers().remove(user);
+        Like like = likeRepository.findByPostPostId(postId).orElseThrow(() -> new RuntimeException("Like not found!"));
+        if (like.getUsers().contains(user.getUserId())) {
+            like.getUsers().remove(user.getUserId());
         } else {
-            like.getUsers().add(user);
+            like.getUsers().add(user.getUserId());
         }
         likeRepository.save(like);
     }

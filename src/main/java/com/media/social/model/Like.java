@@ -21,12 +21,11 @@ public class Like {
     private Long likeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @OneToMany
-    @JoinColumn(name = "user_id")
-    private List<User> users;
+    @ElementCollection
+    private List<Long> users;
 
     @Override
     public boolean equals(Object o) {

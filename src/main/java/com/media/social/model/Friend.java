@@ -23,12 +23,10 @@ public class Friend {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @ToString.Exclude
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "friend_id", referencedColumnName = "user_id")
-    @ToString.Exclude
     private User friend;
 
     @Column(name = "friendship_status")
@@ -37,16 +35,6 @@ public class Friend {
 
     @Column(name = "friend_date")
     private Instant friendDate;
-
-    @Override
-    public String toString() {
-        return "Friend{" +
-                "friendshipId=" + friendshipId +
-                ", user=" + user +
-                ", friend=" + friend +
-                ", friendStatus=" + friendStatus +
-                '}';
-    }
 
     @Override
     public boolean equals(Object o) {

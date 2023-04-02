@@ -1,7 +1,10 @@
 package com.media.social.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.Hibernate;
 
 import java.time.Instant;
@@ -21,7 +24,6 @@ public class Post {
     private Long postId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @ToString.Exclude
     private User user;
     @Column(name = "content", nullable = false)
     private String content;
@@ -29,17 +31,6 @@ public class Post {
     private String imageUrl;
     @Column(name = "post_created", nullable = false)
     private Instant postCreated;
-
-    @Override
-    public String toString() {
-        return "Post{" +
-                "postId=" + postId +
-                ", user=" + user +
-                ", content='" + content + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", postCreated=" + postCreated +
-                '}';
-    }
 
     @Override
     public boolean equals(Object o) {

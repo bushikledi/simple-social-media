@@ -22,11 +22,9 @@ public class Comment {
     private Long commentId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @ToString.Exclude
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    @ToString.Exclude
     private Post post;
     @Column(name = "comment", nullable = false)
     private String comment;
@@ -39,17 +37,6 @@ public class Comment {
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Comment comment = (Comment) o;
         return commentId != null && Objects.equals(commentId, comment.commentId);
-    }
-
-    @Override
-    public String toString() {
-        return "Comment{" +
-                "commentId=" + commentId +
-                ", user=" + user +
-                ", post=" + post +
-                ", comment='" + comment + '\'' +
-                ", commentDate=" + commentDate +
-                '}';
     }
 
     @Override

@@ -6,14 +6,17 @@ import com.media.social.service.TokenService;
 import com.media.social.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
+@Validated
 @RequestMapping("api/user")
 @RequiredArgsConstructor
 public class UserController {
@@ -38,7 +41,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> saveUser(@RequestBody User user) {
+    public ResponseEntity<Void> saveUser(@Valid @RequestBody User user) {
         userService.saveUser(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
