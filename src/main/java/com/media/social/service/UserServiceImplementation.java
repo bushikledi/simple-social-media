@@ -4,7 +4,10 @@ import com.media.social.configuration.PasswordEncoder;
 import com.media.social.dto.UserDTO;
 import com.media.social.model.Role;
 import com.media.social.model.User;
-import com.media.social.repository.*;
+import com.media.social.repository.CommentRepository;
+import com.media.social.repository.FriendRepository;
+import com.media.social.repository.PostRepository;
+import com.media.social.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +22,6 @@ public class UserServiceImplementation implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final MessageRepository messageRepository;
     private final FriendRepository friendRepository;
     private final CommentRepository commentRepository;
 
@@ -51,7 +53,6 @@ public class UserServiceImplementation implements UserService {
             postRepository.deleteAllByUser(user);
             commentRepository.deleteAllByUser(user);
             friendRepository.deleteAllByUserOrFriend(user, user);
-            messageRepository.deleteAllByReceiverOrSender(user, user);
             userRepository.deleteById(user.getUserId());
         } catch (Exception e) {
             throw new RuntimeException("Error deleting user", e);
